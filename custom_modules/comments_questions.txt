@@ -1,0 +1,69 @@
+Diffusion rate has to be divided by cell area- is that accounted for in the equation?
+Or do I have to enter in the modified diffusion rate? (assume it's not accounted for)
+
+// turn off gradient calculations LINE 117
+default_microenvironment_options.bool calculate_gradients = false;
+**Is calculate_gradients the same as calculate diffusion substrates?
+I don't think so- off by default
+
+CHECK PARAM-
+uses 10^5 micrometers^2/min for O2 diffusion
+decay coefficient .11 micrometers (per 1 mm diffusion length
+scale in the absence of cells)
+
+//LINE 127
+what does double mechanics_voxel_size = 30; mean??
+
+p 12-13 User_Guide (USE CODE FOR HYPOXIA/NECROSIS CHECKS)
+p 13 (dirichlet nodes- places where value of o2 is always the same)- use to create blood vessels if needed
+
+GOAL-simplify cell cycle a LOT
+7.4.1 (20-24)- add specific characteristics to cells
+7.4.2 - Cell_Param (24-26)
+    MODIFY THESE TO MATCH JAVA MODEL
+    -simplify(get rid of hypoxic_response and hypoxic_saturation?)
+    -change from necrosis rates to hard cutoffs
+    -Necrosis type (stochastic or deterministic)
+        PhysiCell_constants::deterministic_necrosis or
+        PhysiCell_constants::stochastic_necrosis
+7.4.3 Cell_functions (26-27)
+    in PhysiCell, almost all functions that act on cells take the form
+        void function( Cell* pCell, Phenotype& phenotype, double dt ).
+        phenotype = pCell->phenotype unless pCell = NULL 
+    DONT NEED ANY OF THESE EXCEPT constructor (Cell_Functions())
+    class Cell_Functions {
+        Cell_Functions(); 
+        };
+7.4.4 Cell_State (27-29)
+    cell descriptors, NOT phenotypes
+    what I need- neighbors, orientation
+    neighbors- determined by adhesion interaction potential?
+    replace pressure w/ quiescence (if too many neighbors)
+7.4.4 Cell_Definition (29-30)
+    use to create stem and non-stem cells (and initialize them differently)
+    updates Cell_Functions, Cell_Parameters, phenotype
+    int type, std::string name
+8 Phenotype (30-31)
+    allows you to specify current state and properties of a cell
+    Cycle - different cycles the cell can pass through (death model, other models)
+    Secretion and Motility (uptake rates & movement)
+9 Phenotype details Cell Cycle (30-)
+    double elapsed_time_in_phase
+    int current_phase_index
+    reduce # of phases to 2- increase elapsed time if enough o2
+9.2 Death Models (39-41)
+    ASK_NATE 39- way to get rid of these functions
+    int add_death_model (double rate, Cycle Model* pModel, Death Parameters& death parameters)
+    //add for necrosis and apoptosis (simple models)
+9.3 Volume (42-44)
+    set volume to unchanging amount (20 micrometers^2)
+9.4 Geometry (44-46)
+    set radius to 10 micrometers, delete rest
+9.5 Mechanics (46-47, adhesion/repulsion-set to 0) 
+9.6 Motility (47-48)
+    boonl is_motile, double migration_speed
+    is_motile false by default 
+9.7 Secretion (49-50)
+    only need std::vector<double> uptake_rates
+10 Cell Containers (50-52)
+11 PhysiCell Outputs

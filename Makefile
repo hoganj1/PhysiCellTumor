@@ -1,5 +1,6 @@
 VERSION := 1.2.0
-PROGRAM_NAME := 3Dtumor
+PROGRAM_NAME := 3Dtumor.2.exe
+
 
 CC := g++
 # CC := g++-mp-5 # typical macports compiler name
@@ -177,7 +178,7 @@ clean:
 	
 zip:
 	zip latest.zip */*.cpp */*.h Makefile* *.cpp *.h */*.hpp config/* documentation/* matlab/* README.txt
-	cp latest.zip $$(date +%b_%d_%Y_%H%M).zip
+	cp latest.zip $$(date +%b_%d_%y_%h%m).zip
 	cp latest.zip VERSION_$(VERSION).zip 
 	mv *.zip archives/
 	

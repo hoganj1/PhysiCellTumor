@@ -1,4 +1,4 @@
-//CTRL ` (~) opens command line VSCode
+//CTRL ` (~) opens command line
 /*
 #############################################################################
 # If you use PhysiCell in your project, please cite PhysiCell and the ver-  #
@@ -132,7 +132,6 @@ int main( int argc, char* argv[] )
 	// initialize data structure for cell defaults 
 	initialize_default_cell_definition(); 	
 	
-
 	/* Users typically start modifying here. START USERMODS */ 
 	
 	// Set up default cell models/functions and parameters 
@@ -142,17 +141,11 @@ int main( int argc, char* argv[] )
 	
 	// set default cell cycle model 
 
-	cell_defaults.functions.cycle_model = Ki67_basic; 
+	cell_defaults.functions.cycle_model = Ki67_advanced; 
 	
-	// set default_cell_functions to NULL-phenotype unchanged after initialization
+	// set default_cell_functions; 
 	
-	cell_defaults.functions.volume_update_function = NULL; 
-	cell_defaults.functions.update_migration_bias = NULL; 
-	cell_defaults.functions.update_phenotype = NULL; 
-	cell_defaults.functions.custom_cell_rule = NULL; 
-	cell_defaults.functions.add_cell_basement_membrane_interactions = NULL; 
-	cell_defaults.functions.calculate_distance_to_membrane = NULL; 
-	cell_defaults.functions.set_orientation = NULL;
+	cell_defaults.functions.update_phenotype = update_cell_and_death_parameters_O2_based; 
 	
 	// make sure the defaults are self-consistent. 
 	
@@ -166,9 +159,9 @@ int main( int argc, char* argv[] )
 	int necrosis_model_index = cell_defaults.phenotype.death.find_death_model_index( "Necrosis" );
 	int oxygen_substrate_index = microenvironment.find_density_index( "oxygen" ); 
 
-	int K1_index = Ki67_basic.find_phase_index( PhysiCell_constants::Ki67_positive_premitotic );
-	int K2_index = Ki67_basic.find_phase_index( PhysiCell_constants::Ki67_positive_postmitotic );
-	int Q_index = Ki67_basic.find_phase_index( PhysiCell_constants::Ki67_negative );
+	int K1_index = Ki67_advanced.find_phase_index( PhysiCell_constants::Ki67_positive_premitotic );
+	int K2_index = Ki67_advanced.find_phase_index( PhysiCell_constants::Ki67_positive_postmitotic );
+	int Q_index = Ki67_advanced.find_phase_index( PhysiCell_constants::Ki67_negative );
 
 	// initially no necrosis 
 	cell_defaults.phenotype.death.rates[necrosis_model_index] = 0.0; 
@@ -184,13 +177,25 @@ int main( int argc, char* argv[] )
 	pC->assign_position( 0.0, 0.0, 0.0 );
 	pC->phenotype.cycle.data.current_phase_index = Q_index; 
 
+	pC = create_cell(); 
+	pC->assign_position( -2.0, -6.0, 1.0 );
+	pC->phenotype.cycle.data.current_phase_index = Q_index; 
+	
+	pC = create_cell(); 
+	pC->assign_position( -5.0, 8.0, -7.0 );
+	pC->phenotype.cycle.data.current_phase_index = Q_index; 
+	
+	pC = create_cell(); 
+	pC->assign_position( 5.0, -8.0, 3.0 );
+	pC->phenotype.cycle.data.current_phase_index = Q_index; 
+	
 	// make this last cell randomly motile, less adhesive, greater survival 
 	pC->phenotype.motility.is_motile = true; 
-	pC->phenotype.motility.persistence_time = 15.0; // 15 minutes before switching directions
+	pC->phenotype.motility.persistence_time = 15.0; // 15 minutes
 	pC->phenotype.motility.migration_speed = 0.25; // 0.25 micron/minute 
 	pC->phenotype.motility.migration_bias = 0.0;// completely random 
 	
-	// pC->phenotype.mechanics.cell_cell_adhesion_strength *= 0.05; 
+	pC->phenotype.mechanics.cell_cell_adhesion_strength *= 0.05; 
 	
 	pC->phenotype.death.rates[apoptosis_model_index] = 0.0; 
 
@@ -198,11 +203,10 @@ int main( int argc, char* argv[] )
 	
 	// set MultiCellDS save options 
 
-	//default options commented out
-	// set_save_biofvm_mesh_as_matlab( true ); 
-	// set_save_biofvm_data_as_matlab( true ); 
-	// set_save_biofvm_cell_data( true ); 
-	// set_save_biofvm_cell_data_as_custom_matlab( true );
+	set_save_biofvm_mesh_as_matlab( true ); 
+	set_save_biofvm_data_as_matlab( true ); 
+	set_save_biofvm_cell_data( true ); 
+	set_save_biofvm_cell_data_as_custom_matlab( true );
 	
 	// save a simulation snapshot 
 

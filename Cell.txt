@@ -1,0 +1,171 @@
+Original main.cpp run time (v1 3 minutes, and 24.6282 seconds)
+200 x 750 grid 4 initial cells
+
+What attributes should my cell have?
+	int rho;
+    int cellCycleTime;
+    int necroticTick;
+    boolean isHypoxic;
+    boolean isSurrounded;
+Cell functions
+	bool IsStem
+	bool IsNecNonStem
+	bool IsNecStem
+	void Init
+	public int FindEmptyNbrs3d
+	void Move
+	void Reproduce
+	void SetDiffusibles
+	bool OnlyStemCellSimulation
+	void Step
+	
+CELL STEP
+	    void Step() {//GuiGridVis visCells removed 7/13- no 3d visualization
+        isHypoxic = false;
+        if (IsNecroticNonStem()|| IsNecroticStem()) {
+            if(G().GetTick()-necroticTick>=G().DECOMPOSITION_TIME){//necrotic tick-time cell became necrotic
+                G().nNecroticCells--;//decrement as cells are disposed of
+                Dispose();
+                return;
+            }
+        }
+        else {
+            if(G().rn.nextDouble()<G().APOP_PROB){//random double 0-1
+                if(!IsStem()){
+//                    visCells.SetColor(Xsq(),Ysq(),1,1, 1);
+                    G().nNonStemCells--;
+                }
+                if(IsStem() && !OnlyStemCellSimulation()){
+//                    SetNbhdColor(visCells, 1, 1, 1);
+                    G().nStem--;
+                }
+                Dispose();
+                return;
+            }
+//            double myTNFA=G().tnfa.GetCurr(Xsq()+1,Ysq()+1, Zsq()+1);
+//            double myO2 = G().o2.GetCurr(Xsq()+1,Ysq()+1, Zsq() + 1);//FIXME-use this line of code when ABM solver introduce
+            double myTNFA=G().tnfa.GetCurr(Xsq(),Ysq(), Zsq());
+            double myO2 = G().o2.GetCurr(Xsq(),Ysq(), Zsq());//FIXME-use this line of code when ABM solver introduce
+//            double myO2 = G().o2.GetCurr(Xsq(),Ysq(), Zsq());//Isq() gets the current indices position of the cell (not i,j coordinates)
+            if (myTNFA> G().NECROTIC_TNFA || myO2 < G().NECROTIC_OXYGEN) {//FIXME-add Xsq + 1 (for xyz) when ABM solver is implemented
+                G().nNecroticCells++;
+                necroticTick=G().GetTick();
+                if(!IsStem()) {
+                    rho = -2;//Necrotic non-stem cell
+//                    visCells.SetColor(Xsq(), Ysq(), (float) ((G().GetTick() - necroticTick) * 0.7 / G().DECOMPOSITION_TIME + 0.3), 0, 0);
+                    G().nNonStemCells--;
+                }
+                if(IsStem()){
+                    rho = -3;//is necrotic stem
+                    G().nStem--;
+//                    if(!OnlyStemCellSimulation()){
+//                        SetNbhdColor(visCells,(float)((G().GetTick()-necroticTick)*0.7/G().DECOMPOSITION_TIME+0.3),0,0);
+//                    }
+                }
+                return;
+            }
+            if (myO2 < G().QUIESCENT_OXYGEN || myTNFA > G().QUIESCENT_TNFA ) {//FIXME- or if lvltnfa < QUIESENT_LEVEL
+                G().nHypoxic++;
+                isHypoxic = true;
+//                visCells.SetColor(Xsq(), Ysq(), (float).5, (float).5, (float).5);
+                if(IsStem() && !OnlyStemCellSimulation()) {
+//                    SetNbhdColor(visCells, .5f, .5f, .5f);
+                }
+                return;
+            }
+            cellCycleTime++;
+            //ISSURROUNDED?
+
+            if (cellCycleTime % G().NUM_ITER_BETWEEN_MOVEMENT == 0) {//moves 48 times a day
+                Move();
+            }
+            if (cellCycleTime >= G().ITERATIONS_PER_DAY) {
+//                Reproduce(visCells);//FIXME-if cell is disposed of and returns, rest of function still executed
+                Reproduce();
+                //ADDED 6/29 9:12
+                if(!Alive()){//if cell dies because rho==0
+                    return;
+                }
+            }
+                //visCells.SetColorBound(Xsq(), Ysq(), 0, 1, 0);//FIXME gradient
+
+        }
+    }
+}
+
+MODEL Step
+    void Step() {//GuiGridVis visCells removed 7/13- no 3d visualization
+        isHypoxic = false;
+        if (IsNecroticNonStem()|| IsNecroticStem()) {
+            if(G().GetTick()-necroticTick>=G().DECOMPOSITION_TIME){//necrotic tick-time cell became necrotic
+//                visCells.SetColor(Xsq(), Ysq(), 1, 1, 1);
+//                if(IsNecroticStem() && !OnlyStemCellSimulation()){
+//                    SetNbhdColor(visCells, 1,1,1);
+//                }
+                G().nNecroticCells--;//decrement as cells are disposed of
+                Dispose();
+                return;
+            }
+//            visCells.SetColor(Xsq(), Ysq(), (float) ((G().GetTick() - necroticTick) * 0.7 / G().DECOMPOSITION_TIME + 0.3), 0, 0);
+//            if(IsNecroticStem() && !OnlyStemCellSimulation()){
+//                SetNbhdColor(visCells, (float) ((G().GetTick() - necroticTick) * 0.7 / G().DECOMPOSITION_TIME + 0.3), 0, 0);
+//            }
+        }
+        else {
+            if(G().rn.nextDouble()<G().APOP_PROB){//random double 0-1
+                if(!IsStem()){
+//                    visCells.SetColor(Xsq(),Ysq(),1,1, 1);
+                    G().nNonStemCells--;
+                }
+                if(IsStem() && !OnlyStemCellSimulation()){
+//                    SetNbhdColor(visCells, 1, 1, 1);
+                    G().nStem--;
+                }
+                Dispose();
+                return;
+            }
+            double myTNFA=G().tnfa.GetCurr(Xsq(),Ysq(), Zsq());
+            double myO2 = G().o2.GetCurr(Xsq(),Ysq(), Zsq());//FIXME-use this line of code when ABM solver introduce
+//            double myO2 = G().o2.GetCurr(Xsq(),Ysq(), Zsq());//Isq() gets the current indices position of the cell (not i,j coordinates)
+            if (myTNFA> G().NECROTIC_TNFA || myO2 < G().NECROTIC_OXYGEN) {//FIXME-add Xsq + 1 (for xyz) when ABM solver is implemented
+                G().nNecroticCells++;
+                necroticTick=G().GetTick();
+                if(!IsStem()) {
+                    rho = -2;//Necrotic non-stem cell
+//                    visCells.SetColor(Xsq(), Ysq(), (float) ((G().GetTick() - necroticTick) * 0.7 / G().DECOMPOSITION_TIME + 0.3), 0, 0);
+                    G().nNonStemCells--;
+                }
+                if(IsStem()){
+                    rho = -3;//is necrotic stem
+                    G().nStem--;
+                }
+                return;
+            }
+            if (myO2 < G().QUIESCENT_OXYGEN || myTNFA > G().QUIESCENT_TNFA ) {//FIXME- or if lvltnfa < QUIESENT_LEVEL
+                G().nHypoxic++;
+                isHypoxic = true;
+//                visCells.SetColor(Xsq(), Ysq(), (float).5, (float).5, (float).5);
+                if(IsStem() && !OnlyStemCellSimulation()) {
+//                    SetNbhdColor(visCells, .5f, .5f, .5f);
+                }
+                return;
+            }
+            cellCycleTime++;
+            //ISSURROUNDED?
+            if (cellCycleTime % G().NUM_ITER_BETWEEN_MOVEMENT == 0) {//moves 48 times a day
+//                Move(visCells);
+                Move();
+            }
+            if (cellCycleTime >= G().ITERATIONS_PER_DAY) {
+//                Reproduce(visCells);//FIXME-if cell is disposed of and returns, rest of function still executed
+                Reproduce();
+                //ADDED 6/29 9:12
+                if(!Alive()){//if cell dies because rho==0
+                    return;
+                }
+            }
+                //visCells.SetColorBound(Xsq(), Ysq(), 0, 1, 0);//FIXME gradient
+//            }
+        }
+    }
+}

@@ -10,10 +10,10 @@
 			<user />
 		</software>
 		<citation />
-		<current_time units="min">0.000000</current_time>
-		<current_runtime units="sec">0.053661</current_runtime>
-		<created>2017-08-31T23:28:22Z</created>
-		<last_modified>2017-08-31T23:28:22Z</last_modified>
+		<current_time units="min">1440.010000</current_time>
+		<current_runtime units="sec">200.280649</current_runtime>
+		<created>2017-08-31T23:31:43Z</created>
+		<last_modified>2017-08-31T23:31:43Z</last_modified>
 	</metadata>
 	<microenvironment>
 		<domain name="tumor habitat">
@@ -36,7 +36,7 @@
 				</variable>
 			</variables>
 			<data type="matlab">
-				<filename>output00000000_microenvironment0.mat</filename>
+				<filename>final_microenvironment0.mat</filename>
 			</data>
 		</domain>
 	</microenvironment>
@@ -45,7 +45,7 @@
 			<cell_population type="individual">
 				<custom>
 					<simplified_data type="matlab" source="BioFVM">
-						<filename>output00000000_cells.mat</filename>
+						<filename>final_cells.mat</filename>
 					</simplified_data>
 					<simplified_data type="matlab" source="PhysiCell">
 						<labels>
@@ -63,7 +63,7 @@
 							<label index="13" size="3">orientation</label>
 							<label index="16" size="1">polarity</label>
 						</labels>
-						<filename>output00000000_cells_physicell.mat</filename>
+						<filename>final_cells_physicell.mat</filename>
 					</simplified_data>
 				</custom>
 			</cell_population>
